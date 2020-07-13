@@ -6,6 +6,7 @@
 mkdir db
 cd db
 mkdir data
+```
 - Create database
 mongo
 > use your_database_name

@@ -15,7 +15,6 @@ const getAnimals = async (req, res, next)=>
       })
       res.status(200).json(animalsArr);
     } catch (error) {
-      console.log(error);
       Errormsg(error, res);
     }
   }
