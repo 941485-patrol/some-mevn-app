@@ -19,7 +19,7 @@ router.route('/')
     createAnimal(req, res, next);
   })
 
-router.route('/single/:id')
+router.route('/:id')
   .get((req, res, next)=> 
   {
     getAnimal(req, res, next);

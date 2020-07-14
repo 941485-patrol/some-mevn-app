@@ -1,7 +1,7 @@
 const Animal = require('../../models/animal');
 const Type = require('../../models/type');
 const Errormsg = require('../../errmsg');
-var updateValidation = { runValidators: true };
+var updateValidation = {runValidators:true, context: 'query'};
 
 const updateType = async (req, res, next) => {
     try {

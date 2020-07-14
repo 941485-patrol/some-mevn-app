@@ -24,7 +24,7 @@ router.route('/')
     createType(req, res, next);
   })
 
-router.route('/single/:id')
+router.route('/:id')
   .get((req, res, next)=> 
   {
     getType(req, res, next);

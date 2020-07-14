@@ -1,11 +1,10 @@
 const Animal = require('../../models/animal');
 const Type = require('../../models/type');
-var updateValidation = { runValidators: true };
+var updateValidation = {runValidators:true, context: 'query'};
 
 const deleteAnimal = async (req, res, next)=>{
   try {
-    var nullifyType = await Type.updateOne({animal_ids:req.params.id}, {'$pull': {animal_ids: req.params.id}}, updateValidation);
-    if (nullifyType.nModified == 0) throw new Error("Error deleting data.");
+    await Type.updateOne({animal_ids:req.params.id}, {'$pull': {animal_ids: req.params.id}}, updateValidation);
     var delAnimal = await Animal.deleteOne({_id:req.params.id});
     if (delAnimal.deletedCount != 1) throw new Error('Error deleting data.');
     res.status(200).json({'message': 'Animal deleted.'});
