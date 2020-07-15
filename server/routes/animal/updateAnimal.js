@@ -10,20 +10,22 @@ const updateAnimal = async (req, res, next) => {
     var animal = await Animal.findOne({_id: req.params.id});
     if ( animal === null) throw new Error('Cannot find Animal.');
     animal.name = req.body.name;
-    animal.description = req.body.name;
+    animal.description = req.body.description;
     animal.type_id = req.body.type_id;
     animal.updated_at = Date.now();
     var pullType = await Type.findOne({animal_ids: req.params.id});
     if ( pullType === null ) {
-      var pushType = await Type.findOne({_id: req.params.id});
+      var pushType = await Type.findOne({_id: req.body.type_id});
+      if ( pushType === null ) throw new Error('Cannot find Type'); 
+      if ( pushType.animal_ids.includes(req.params.id) === true ) throw new Error('Duplicate entry');
       pushType.animal_ids.push(req.params.id);
       await animal.save();
       await pushType.save({validateBeforeSave: false});
     } else {
       pullType.animal_ids.pull(req.params.id);
-      var pushType = await Type.findOne({_id: req.params.id});
+      var pushType = await Type.findOne({_id: req.body.type_id});
+      if ( pushType === null ) throw new Error('Cannot find Type'); 
       pushType.animal_ids.push(req.params.id);
-      var animal = Animal.findOne({_id: req.params.id});
       await animal.save();
       await pullType.save({validateBeforeSave: false});
       await pushType.save({validateBeforeSave: false});

@@ -7,12 +7,12 @@ const deleteType = async (req, res, next)=>{
     if( mongoose.isValidObjectId(req.params.id) === false ) throw new Error('Invalid Url.');
     var deleteType = await Type.deleteOne({_id:req.params.id});
     if (deleteType.deletedCount != 1) throw new Error('Error deleting data.');
-    var animals = Animal.find({type_id: req.params.id});
+    var animals = await Animal.find({type_id: req.params.id});
     if ( animals != null) {
-      animals.forEach(animal => {
+      animals.forEach(async animal => {
         animal.type_id = null;
+        await animal.save({validateBeforeSave: false});
       });
-      await animals.save({validateBeforeSave: false});
     }
     res.status(200).json({'message': 'Type deleted.'});
   } catch (error) {

@@ -30,5 +30,5 @@ var typeSchema = new Schema({
 var Type = mongoose.model('Type', typeSchema);
 typeSchema.path('name').validate(TypeNameExists,'Type name already exists.');
 typeSchema.path('environment').validate(TypeEnvExists,'Type environment already exists.');
-typeSchema.path('animal_ids').validate(CheckAnimalId,'Wrong animal ids.');
+typeSchema.path('animal_ids').validate(CheckAnimalId,'An Animal ID does not exist.');
 module.exports = Type;

@@ -32,5 +32,5 @@ var Animal = mongoose.model('Animal', animalSchema);
 // animalSchema.path('name').validate({validator: AnimalNameExists, model: Animal, message: 'Animal name already exists.', propsParameter: true})
 animalSchema.path('name').validate(AnimalNameExists, 'Animal name already exists.');
 animalSchema.path('description').validate(AnimalDescExists, 'Animal description already exists.');
-animalSchema.path('type_id').validate(CheckTypeId,'Wrong type id.');
+animalSchema.path('type_id').validate(CheckTypeId,'Type ID does not exist.');
 module.exports = Animal;
