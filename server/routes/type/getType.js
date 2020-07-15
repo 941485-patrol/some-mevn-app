@@ -1,9 +1,10 @@
 const Type = require('../../models/type');
 const Errormsg = require('../../errmsg');
 const serializeType = require('./serializeType');
+const mongoose = require('mongoose');
 const getType = async (req, res, next)=>{
-
   try {
+    if( mongoose.isValidObjectId(req.params.id) === false ) throw new Error('Invalid Url.');
     var type = await Type.findOne({_id : req.params.id}).populate('animal_ids');
     if (type==null) throw new Error("Wrong id");
     var typeObj = serializeType(type);

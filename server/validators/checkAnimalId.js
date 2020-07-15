@@ -1,6 +1,13 @@
 const checkTypeId = async (value) => {
-    if (value=='') return true;
-    var Animal = require('../models/animal');
-    return await Animal.exists({_id:value})
+    const Animal = require('../models/animal');
+    if (this.__v != undefined ) {
+        if (value.length > 0) {
+            value.forEach(val => {
+                if (Animal.exists({_id: val}) === false) return false;
+            });
+        }
+    } else {
+        return true;
+    }
 }
 module.exports = checkTypeId;

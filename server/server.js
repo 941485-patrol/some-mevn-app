@@ -10,7 +10,7 @@ var mongoose = require('./database');
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
-  console.log('Database connected.');
+  console.log(`Database ${process.env.DB_NAME} connected.`);
 });
 
 app.listen(process.env.PORT,()=>{ console.log(`Listening to port ${process.env.PORT}`)});

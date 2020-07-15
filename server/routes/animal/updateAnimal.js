@@ -2,21 +2,34 @@ const Animal = require('../../models/animal');
 const Type = require('../../models/type');
 const Errormsg = require('../../errmsg');
 var updateValidation = {runValidators:true, context: 'query'};
-
+const mongoose = require('mongoose');
 const updateAnimal = async (req, res, next) => {
   try {
-    var update = {
-      name: req.body.name,
-      description: req.body.description, 
-      type_id: req.body.type_id,
-      updated_at: Date.now(),
-    };
-    var pull = {'$pull': {animal_ids:req.params.id}};
-    var push = {'$push': {animal_ids:req.params.id}};
-    var updatedAnimal = await Animal.updateOne({_id:req.params.id}, update, updateValidation);
-    if (updatedAnimal.nModified == 0) throw new Error("Wrong id");
-    await Type.updateOne({animal_ids: req.params.id}, pull);
-    await Type.updateOne({_id: update.type_id}, push);
+    if( mongoose.isValidObjectId(req.params.id) === false ) throw new Error('Invalid Url.');
+    if( mongoose.isValidObjectId(req.body.type_id) === false ) throw new Error('Invalid Type ID.');
+    var animal = await Animal.findOne({_id: req.params.id});
+    if ( animal === null) throw new Error('Cannot find Animal.');
+    animal.name = req.body.name;
+    animal.description = req.body.description;
+    animal.type_id = req.body.type_id;
+    animal.updated_at = Date.now();
+    var pullType = await Type.findOne({animal_ids: req.params.id});
+    if ( pullType === null ) {
+      var pushType = await Type.findOne({_id: req.body.type_id});
+      if ( pushType === null ) throw new Error('Cannot find Type'); 
+      if ( pushType.animal_ids.includes(req.params.id) === true ) throw new Error('Duplicate entry');
+      pushType.animal_ids.push(req.params.id);
+      await animal.save();
+      await pushType.save({validateBeforeSave: false});
+    } else {
+      pullType.animal_ids.pull(req.params.id);
+      var pushType = await Type.findOne({_id: req.body.type_id});
+      if ( pushType === null ) throw new Error('Cannot find Type'); 
+      pushType.animal_ids.push(req.params.id);
+      await animal.save();
+      await pullType.save({validateBeforeSave: false});
+      await pushType.save({validateBeforeSave: false});
+    }
     res.redirect(301, req.originalUrl);
   } catch (error) {
     Errormsg(error, res);
