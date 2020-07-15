@@ -1,0 +1,44 @@
+// ALTERNATE TO DELETE ANIMAL
+  // try {
+  //   await Type.updateOne({animal_ids:req.params.id}, {'$pull': {animal_ids: req.params.id}}, updateValidation);
+  //   var delAnimal = await Animal.deleteOne({_id:req.params.id});
+  //   if (delAnimal.deletedCount != 1) throw new Error('Error deleting data.');
+  //   res.status(200).json({'message': 'Animal deleted.'});
+  // } catch (error) {
+  //   res.status(400).json([error.message])
+  // }
+
+// ALTERNATE TO CREATE ANIMAL
+  // try {
+  //   var animal = new Animal 
+  //   ({
+  //     name: req.body.name,
+  //     description: req.body.description, 
+  //     type_id: req.body.type_id,
+  //   });
+  //   var updateType = await Type.updateOne({_id: animal.type_id},{'$push': {animal_ids: animal._id}},updateValidation);
+  //   if (updateType.nModified == 0) throw new Error("Error adding type id.");
+  //   await animal.save();
+  //   res.status(200).json({"message": "Animal created"});
+  // } catch (error) {
+  //   Errormsg(error, res);
+  // }
+
+  // ALTERNATE TO UPDATE 
+  // try {
+  //   var update = {
+  //     name: req.body.name,
+  //     description: req.body.description, 
+  //     type_id: req.body.type_id,
+  //     updated_at: Date.now(),
+  //   };
+  //   var pull = {'$pull': {animal_ids:req.params.id}};
+  //   var push = {'$push': {animal_ids:req.params.id}};
+  //   var updatedAnimal = await Animal.updateOne({_id:req.params.id}, update, updateValidation);
+  //   if (updatedAnimal.nModified == 0) throw new Error("Wrong id");
+  //   await Type.updateOne({animal_ids: req.params.id}, pull);
+  //   await Type.updateOne({_id: update.type_id}, push);
+  //   res.redirect(301, req.originalUrl);
+  // } catch (error) {
+  //   Errormsg(error, res);
+  // } 
