@@ -1,17 +1,17 @@
 const Animal = require('../../models/animal');
 const Type = require('../../models/type');
 const Errormsg = require('../../errmsg');
-var updateValidation = {runValidators:true, context: 'query'};
+const mongoose = require('mongoose');
 
 const updateType = async (req, res, next) => {
     try {
-        var update = {
-            name: req.body.name,
-            environment: req.body.environment, 
-            updated_at: Date.now(),
-        };
-        var updatedAnimal = await Type.updateOne({_id:req.params.id}, update, updateValidation);
-        if (updatedAnimal.nModified == 0) throw new Error("Wrong id.");
+        if( mongoose.isValidObjectId(req.params.id) === false ) throw new Error('Invalid Url.');
+        var type = await Type.findOne({_id:req.params.id});
+        if ( type === null ) throw new Error('Cannot find type.');
+        type.name = req.body.name;
+        type.environment = req.body.environment;
+        type.updated_at = Date.now();
+        await type.save();
         res.redirect(301, req.originalUrl);
     } catch (error) {
         Errormsg(error, res);
