@@ -1,30 +1,30 @@
-## Instructions
+## Frontend
+```sh
+cd client
+npm install
+npm run serve
+```
 
-- Download MongoDb
-- Make db/data/ to your root folder
+## Backend
+```sh
+cd server
+npm install
+npm run dev
+```
+
+## Database
+- Install MongoDb
+- Make db/data to your root folder
 ```sh
 mkdir db
 cd db
 mkdir data
 ```
-- Create database
+- Make database
 ```sh
 mongo
-> use your_database_name
-> exit
-```
-- Install dependencies
-```sh
-npm install
-```
-- Rename .env-example file to .env and configure
-```sh
-PORT=3000
-DB_NAME=your_database_name
-```
-- Run server
-```sh
-npm run dev
+use your_database_name
+exit
 ```
 
-Coming soon vue front end...
+Note: Run database first before running backend app. Refer to respective folder's README for more details.
