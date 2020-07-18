@@ -11,11 +11,9 @@ const createAnimal = async (req, res, next ) => {
       description: req.body.description, 
       type_id: req.body.type_id,
     });
-    var type = await Type.findOne({_id: req.body.type_id});
-    if ( type === null ) throw new Error('Cannot find Type. Please create a Type or enter valid Type ID');
-    if ( type.animal_ids.includes(animal._id) === true ) throw new Error('Duplicate entry.');
-    type.animal_ids.push(animal._id);
     await animal.save();
+    var type = await Type.findOne({_id: animal.type_id});
+    type.animal_ids.push(animal._id);
     await type.save({validateBeforeSave: false});
     res.status(200).json({"message": "Animal created"});
   } catch (error) {

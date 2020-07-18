@@ -16,7 +16,7 @@ var animalSchema = new Schema({
     description:{
         type:String, 
         default:null,
-        required:[true, 'Description of animal is required.'],
+        required:[true, 'Animal description is required.'],
         maxlength:255,
         minlength:[5, 'Description is too short...'],
         trim: true,

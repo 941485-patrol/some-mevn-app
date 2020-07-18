@@ -1,1 +1,2 @@
 api: nodemon app/server.js
+testing: mocha app/test
