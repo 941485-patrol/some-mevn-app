@@ -1,7 +1,6 @@
 const Animal = require('../../models/animal');
 const Type = require('../../models/type');
 const Errormsg = require('../../errmsg');
-var updateValidation = {runValidators:true, context: 'query'};
 const mongoose = require('mongoose');
 const updateAnimal = async (req, res, next) => {
   try {
@@ -13,17 +12,13 @@ const updateAnimal = async (req, res, next) => {
     animal.description = req.body.description;
     animal.type_id = req.body.type_id;
     animal.updated_at = Date.now();
-    
+    var updatedAnimal = await animal.save();
     var pullType = await Type.findOne({animal_ids: req.params.id});
     if ( pullType != null ) pullType.animal_ids.pull(req.params.id);
-
-    var pushType = await Type.findOne({_id: req.body.type_id});
-    if (pushType == null ) throw new Error('Cannot find type.');
+    var pushType = await Type.findOne({_id: updatedAnimal.type_id});
     pushType.animal_ids.push(req.params.id);
-    
-    animal.save();
-    pullType.save({validateBeforeSave: false});
-    pushType.save({validateBeforeSave: false});
+    await pullType.save({validateBeforeSave: false});
+    await pushType.save({validateBeforeSave: false});
     res.redirect(301, req.originalUrl);
   } catch (error) {
     Errormsg(error, res);
