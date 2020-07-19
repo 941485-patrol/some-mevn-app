@@ -60,26 +60,24 @@ describe('Animal', function(){
                 environment:'myenvironment'
             })
             await type.save();
-            request(app)
-            .post('api/animal')
-            .send({name:'myname', description:'mydescription', type_id:type.type_id})
-            .expect(200);
-            request(app)
-            .post('api/animal')
+            var savedType = type._id;
+            var animal = new Animal({
+                name:'myname',
+                description:'mydescription',
+                type_id: type._id
+            })
+            await animal.save();
+            var savedAnimal = animal._id;
+            await request(app)
+            .post('/api/animal')
             .send({name:'myname', description:'mydescription', type_id:type.type_id})
             .expect(400)
-            .expect(['Animal name already exists.', 'Animal description already exists.'])
-            .end(async function(res, err){
-                try {
-                    if (err) throw err;
-                    await Type.deleteOne({_id:type._id});
-                    await Animal.deleteOne({type_id:type.type_id});
-                } catch (err) {
-                    console.log(err);
-                }
-            })
+            .expect(['Animal name already exists.', 'Animal description already exists.']);
         } catch (error) {
             console.log(error);
+        } finally {
+            await Animal.deleteOne({_id:savedAnimal});
+            await Type.deleteOne({_id:savedType});
         }
     });
 })
