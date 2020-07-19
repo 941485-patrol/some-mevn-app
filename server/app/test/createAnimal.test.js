@@ -70,9 +70,13 @@ describe('Animal', function(){
             .expect(400)
             .expect(['Animal name already exists.', 'Animal description already exists.'])
             .end(async function(res, err){
-                if (err) throw err;
-                await Type.deleteOne({_id:type._id});
-                await Animal.deleteOne({type_id:type.type_id});
+                try {
+                    if (err) throw err;
+                    await Type.deleteOne({_id:type._id});
+                    await Animal.deleteOne({type_id:type.type_id});
+                } catch (err) {
+                    console.log(err);
+                }
             })
         } catch (error) {
             console.log(error);
