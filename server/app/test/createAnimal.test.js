@@ -57,7 +57,7 @@ describe('Create Animal', function(){
         .post('/api/animal')
         .send({name:'m', description:'abcd', type_id:'0123456789ab'})
         .expect(400)
-        .expect((err, res)=>{
+        .expect((res, err)=>{
             if (err) throw err;
             if (res.body.includes('No animal has one letter...')===false) throw new Error('Test case has failed.');
             if (res.body.includes('Description is too short...')===false) throw new Error('Test case has failed.');
@@ -69,7 +69,7 @@ describe('Create Animal', function(){
         .post('/api/animal')
         .send({name:null, description:'', type_id:'0123456789ab'})
         .expect(400)
-        .expect((err, res)=>{
+        .expect((res, err)=>{
             if (err) throw err;
             if (res.body.includes('Animal name is required.')===false) throw new Error('Test case has failed.');
             if (res.body.includes('Animal description is required.')===false) throw new Error('Test case has failed.');
@@ -95,7 +95,7 @@ describe('Create Animal', function(){
             .post('/api/animal')
             .send({name:'myname', description:'mydescription', type_id:type.type_id})
             .expect(400)
-            .expect((err, res)=>{
+            .expect((res, err)=>{
                 if (err) throw err;
                 if (res.body.includes('Animal name already exists.')==false) throw new Error('Test case failed.');
                 if (res.body.includes('Animal description already exists.')==false) throw new Error('Test case failed.');

@@ -21,18 +21,18 @@ describe('Delete Animal', function(){
             .expect(200)
             .expect({'message': 'Animal deleted.'})
         await request(app)
-        .get(`/api/type/${newType.id}`)
-        .expect((err, res)=>{
+        .get(`/api/type/${newType._id}`)
+        .expect((res, err)=>{
             if (err) throw err;
-            var animal_ids = res.animal_ids;
-            if (animal.ids.length > 0) {
+            var animal_ids = res.body.animals;
+            if (animal_ids.length > 0) {
                 animal_ids.forEach(animal => {
                     if (animal._id === newAnimal._id) throw new Error('Test case failed.');
                 });
             }
         });
         await Type.deleteMany();
-        await Type.deleteMany();
+        await Animal.deleteMany();
     });
 
     it('Error if wrong type id in url', async function(){

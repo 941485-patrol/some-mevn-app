@@ -68,7 +68,7 @@ describe('Update Animal', function(){
                 description:newAnimal1.description, 
                 type_id:newAnimal1.type_id})
             .expect(400)
-            .expect((err, res)=>{
+            .expect((res, err)=>{
                 if (err) throw err;
                 if (res.body.includes('Animal name already exists.')==false) throw new Error('Test case failed.');
                 if (res.body.includes('Animal description already exists.')==false) throw new Error('Test case failed.');
@@ -94,7 +94,7 @@ describe('Update Animal', function(){
                 description:'', 
                 type_id:newAnimal.type_id})
             .expect(400)
-            .expect((err, res)=>{
+            .expect((res, err)=>{
                 if (err) throw err;
                 if (res.body.includes('Animal name is required.')===false) throw new Error('Test case has failed.');
                 if (res.body.includes('Animal description is required.')===false) throw new Error('Test case has failed.');
@@ -105,7 +105,7 @@ describe('Update Animal', function(){
                 description:'des', 
                 type_id:newAnimal.type_id})
             .expect(400)
-            .expect((err, res)=>{
+            .expect((res, err)=>{
                 if (err) throw err;
                 if (res.body.includes('No animal has one letter...')===false) throw new Error('Test case has failed.');
                 if (res.body.includes('Description is too short...')===false) throw new Error('Test case has failed.');

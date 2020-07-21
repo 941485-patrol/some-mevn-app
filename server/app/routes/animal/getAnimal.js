@@ -6,7 +6,7 @@ const getAnimal = async (req, res, next)=>{
   try {
     if( mongoose.isValidObjectId(req.params.id) === false ) throw new Error('Invalid Url.');
     var animal = await Animal.findOne({_id : req.params.id}).populate('type_id');
-    if (animal==null) throw new Error("Wrong id");
+    if (animal==null) throw new Error("Cannot find animal.");
     var animalObj = serializeAnimal(animal);
     res.status(200).json(animalObj);
   } catch (error) {
