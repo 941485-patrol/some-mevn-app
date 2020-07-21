@@ -57,7 +57,11 @@ describe('Create Animal', function(){
         .post('/api/animal')
         .send({name:'m', description:'abcd', type_id:'0123456789ab'})
         .expect(400)
-        .expect(['No animal has one letter...', 'Description is too short...', 'Type ID does not exist.']);
+        .expect((err, res)=>{
+            if (err) throw err;
+            if (res.body.includes('No animal has one letter...')===false) throw new Error('Test case has failed.');
+            if (res.body.includes('Description is too short...')===false) throw new Error('Test case has failed.');
+        })
     });
 
     it('Nulltype/empty string field validtion', async function(){
@@ -65,7 +69,11 @@ describe('Create Animal', function(){
         .post('/api/animal')
         .send({name:null, description:'', type_id:'0123456789ab'})
         .expect(400)
-        .expect(['Animal name is required.', 'Animal description is required.', 'Type ID does not exist.']);
+        .expect((err, res)=>{
+            if (err) throw err;
+            if (res.body.includes('Animal name is required.')===false) throw new Error('Test case has failed.');
+            if (res.body.includes('Animal description is required.')===false) throw new Error('Test case has failed.');
+        })
     })
 
     it('Avoid duplicate entry', async function(){
@@ -87,7 +95,11 @@ describe('Create Animal', function(){
             .post('/api/animal')
             .send({name:'myname', description:'mydescription', type_id:type.type_id})
             .expect(400)
-            .expect(['Animal name already exists.', 'Animal description already exists.']);
+            .expect((err, res)=>{
+                if (err) throw err;
+                if (res.body.includes('Animal name already exists.')==false) throw new Error('Test case failed.');
+                if (res.body.includes('Animal description already exists.')==false) throw new Error('Test case failed.');
+            })
         } catch (error) {
             console.log(error);
         } finally {

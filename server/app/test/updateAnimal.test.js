@@ -5,6 +5,27 @@ const Animal = require('../models/animal');
 const mongoose = require('mongoose');
 
 describe('Update Animal', function(){
+    it('Update an animal', async function(){
+        await request(app)
+            .post('/api/type')
+            .send({name:'name', environment:'environment'})
+            .expect(200)
+        var newType = await Type.findOne({name:'name'});
+        await request(app)
+            .post('/api/animal')
+            .send({name:'myname', description:'mydescription', type_id: newType._id})
+            .expect(200)
+        var newAnimal = await Animal.findOne({name: 'myname'});
+        await request(app)
+            .put(`/api/animal/${newAnimal._id}`)
+            .send({name:'mynewname', 
+                description:'mynewdescription',
+                type_id:newAnimal.type_id})
+            .expect(301)
+        await Animal.deleteOne({_id: newAnimal._id});
+        await Type.deleteOne({_id: newType._id});
+    });
+
     it('Error on post url or whitespace url', async function(){
         await request(app)
         .put('/api/animal/    ')
@@ -47,9 +68,13 @@ describe('Update Animal', function(){
                 description:newAnimal1.description, 
                 type_id:newAnimal1.type_id})
             .expect(400)
-            .expect(['Animal name already exists.', 'Animal description already exists.']);
+            .expect((err, res)=>{
+                if (err) throw err;
+                if (res.body.includes('Animal name already exists.')==false) throw new Error('Test case failed.');
+                if (res.body.includes('Animal description already exists.')==false) throw new Error('Test case failed.');
+            })
         await Type.deleteOne({_id: newType._id});
-        await Animal.deleteMany({type_id: newType._id});
+        await Animal.deleteMany();
     });
 
     it('Empty and uncomplete fields on update validation', async function(){
@@ -69,16 +94,24 @@ describe('Update Animal', function(){
                 description:'', 
                 type_id:newAnimal.type_id})
             .expect(400)
-            .expect(['Animal name is required.', 'Animal description is required.']);
+            .expect((err, res)=>{
+                if (err) throw err;
+                if (res.body.includes('Animal name is required.')===false) throw new Error('Test case has failed.');
+                if (res.body.includes('Animal description is required.')===false) throw new Error('Test case has failed.');
+            })
         await request(app)
             .put(`/api/animal/${newAnimal._id}`)
             .send({name:'n', 
                 description:'des', 
                 type_id:newAnimal.type_id})
             .expect(400)
-            .expect(['No animal has one letter...', 'Description is too short...']);
+            .expect((err, res)=>{
+                if (err) throw err;
+                if (res.body.includes('No animal has one letter...')===false) throw new Error('Test case has failed.');
+                if (res.body.includes('Description is too short...')===false) throw new Error('Test case has failed.');
+            })
         await Type.deleteOne({_id: newType._id});
-        await Animal.deleteMany({type_id: newType._id});
+        await Animal.deleteOne({_id: newAnimal._id});
     })
     
     it('Type id validation', async function(){
@@ -123,29 +156,4 @@ describe('Update Animal', function(){
         await Animal.deleteOne({_id: newAnimal._id});
         await Type.deleteOne({_id: newType._id});
     });
-
-    // it('Invalid type id on url update', async function(){
-    //     var type = new Type({
-    //         name: 'myname',
-    //         environment:'myenvironment'
-    //     })
-    //     var newType = await type.save();
-    //     var newTypeId = newType._id;
-    //     var animal = new Animal({
-    //         name:'myname',
-    //         description:'mydescription',
-    //         type_id: newTypeId
-    //     })
-    //     var newAnimal = await animal.save();
-    //     var newAnimalId = newAnimal._id;
-    //     await request(app)
-    //     .put(`/api/animal/${newAnimalId}`)
-    //     .send({name: newAnimal.name, 
-    //         description: newAnimal.description, 
-    //         type_id:'invalid_type_id'})
-    //     .expect(400)
-    //     .expect(['Invalid Type ID.'])
-    //     await Animal.deleteOne({_id: newAnimalId});
-    //     await Type.deleteOne({_id: newTypeId});
-    // });
 })
