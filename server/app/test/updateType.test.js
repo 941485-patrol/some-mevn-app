@@ -1,8 +1,15 @@
 var app = require('../testServer');
 const request = require('supertest');
 const Type = require('../models/type');
+const Animal = require('../models/animal');
+const Status = require('../models/status');
 
 describe('Update Type', function(){
+    before(async function(){
+        await Type.deleteMany();
+        await Animal.deleteMany();
+        await Status.deleteMany();
+    });
     it('Update a Type', async function(){
         await request(app)
         .post('/api/type')
@@ -85,7 +92,7 @@ describe('Update Type', function(){
         var newType = await Type.findOne({name:'name'});
         await request(app)
         .put(`/api/type/0123456789ab`)
-        .send({name:newType.name, environment:newType.description})
+        .send({name:newType.name, environment:newType.environment})
         .expect(400)
         .expect(['Cannot find type.'])
         await Type.deleteMany()
@@ -98,5 +105,10 @@ describe('Update Type', function(){
         await request(app)
         .put(`/api/type/        `)
         .expect(404)
+    });
+    after(async function(){
+        await Type.deleteMany();
+        await Animal.deleteMany();
+        await Status.deleteMany();
     });
 });

@@ -4,7 +4,7 @@ const Errormsg = require('../../errmsg');
 const getAnimals = async (req, res, next)=>
   {
     try {
-      var animals = await Animal.find().populate('type_id');
+      var animals = await Animal.find().populate('type_id').populate(['status_id']);
       if (animals.length == 0) {
         res.status(200).json({'message': 'No data.'})
       } else {

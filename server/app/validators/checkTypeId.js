@@ -1,5 +1,6 @@
-const checkTypeId = async (value) => {
+const checkTypeId = async function (value) {
     const Type = require('../models/type');
-    return await Type.exists({_id:value});
+    var type =  await Type.exists({_id:value});
+    if (type === false) return false;
 } 
 module.exports = checkTypeId;

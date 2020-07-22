@@ -1,8 +1,15 @@
 var app = require('../testServer');
 const request = require('supertest');
 const Type = require('../models/type');
+const Animal = require('../models/animal');
+const Status = require('../models/status');
 
 describe('Get Type', function(){
+    before(async function(){
+        await Type.deleteMany();
+        await Animal.deleteMany();
+        await Status.deleteMany();
+    });
     it('Get one type', async function(){
         await request(app)
         .post('/api/type')

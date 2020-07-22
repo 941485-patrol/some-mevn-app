@@ -4,6 +4,7 @@ var app = express();
 var indexRouter = require('./routes/index');
 var typeRouter = require('./routes/type');
 var animalRouter = require('./routes/animal');
+var statusRouter = require('./routes/status');
 var mongoose = require('./database');
 
 // Connect database
@@ -18,5 +19,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/', indexRouter);
 app.use('/api/type', typeRouter);
+app.use('/api/status', statusRouter);
 app.use('/api/animal', animalRouter);
 module.exports = app;

@@ -3,7 +3,7 @@ var Schema = mongoose.Schema;
 var CheckTypeId = require('../validators/checkTypeId');
 var AnimalNameExists = require('../validators/animalNameExists');
 var AnimalDescExists = require('../validators/animalDescExists');
-
+var CheckStatusId = require('../validators/checkStatusId');
 var animalSchema = new Schema({
     name: {
         type:String, 
@@ -27,10 +27,15 @@ var animalSchema = new Schema({
         type:Schema.Types.ObjectId, 
         ref:'Type',
     },
+    status_id:{
+        type:Schema.Types.ObjectId,
+        ref:'Status',
+    }
 });
 var Animal = mongoose.model('Animal', animalSchema);
 // animalSchema.path('name').validate({validator: AnimalNameExists, model: Animal, message: 'Animal name already exists.', propsParameter: true})
 animalSchema.path('name').validate(AnimalNameExists, 'Animal name already exists.');
 animalSchema.path('description').validate(AnimalDescExists, 'Animal description already exists.');
 animalSchema.path('type_id').validate(CheckTypeId,'Type ID does not exist.');
+animalSchema.path('status_id').validate(CheckStatusId,'Status ID does not exist.');
 module.exports = Animal;
