@@ -7,13 +7,10 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/test', async function(req, res){
-    let url = 'http://dummy.restapiexample.com/api/v1/employees';
+    let url = 'https://api.npms.io/v2/search?q=vue';
     let response = await fetch(url);
     let result = await response.json();
-    if (result.status == 'success')
-    {
-      res.send(JSON.stringify(result.data));
-    }
+    res.send(result);
 });
 
 module.exports = router;

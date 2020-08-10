@@ -1,7 +1,8 @@
 <template>
   <div id="container">
     <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="MYAPP"/>
+    <HelloWorld msg="MYAPP" />
+    <p>{{datum}}</p>
   </div>
 </template>
 
@@ -12,6 +13,17 @@ export default {
   name: 'App',
   components: {
     HelloWorld
+  },
+  data: function(){
+    return  {
+      datum: ''
+    }
+  },
+  async created(){
+    // var response = await fetch("http://127.0.0.1:3000/api/animal")
+    var response = await fetch("https://api.npms.io/v2/search?q=vue");
+    var result = await response.json()
+    this.datum = result.results;
   }
 }
 </script>
