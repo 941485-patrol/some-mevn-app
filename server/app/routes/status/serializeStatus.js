@@ -1,4 +1,4 @@
-const serializeStatus = function (status) {
+const serializeStatus = (status) => {
     var animalIdsArr=[];
     status.animal_ids.forEach(animal=>{
         animalIdsArr.push({
