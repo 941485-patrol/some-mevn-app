@@ -21,7 +21,7 @@ export default {
   },
   async created(){
     // var response = await fetch("http://127.0.0.1:3000/api/animal")
-    var response = await fetch("https://api.npms.io/v2/search?q=vue");
+    var response = await fetch("https://api.npms.io/v2/search?q=vue"); //example url
     var result = await response.json()
     this.datum = result.results;
   }
