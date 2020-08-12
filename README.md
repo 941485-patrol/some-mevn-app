@@ -27,4 +27,4 @@ use your_database_name
 exit
 ```
 
-Note: Run database first before running backend app. Refer to respective folder's README for more details.
+Note: Run database first before running backend app. Refer to respective folder's README for more details...
