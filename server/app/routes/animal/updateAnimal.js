@@ -24,9 +24,11 @@ const updateAnimal = async (req, res, next) => {
     pushType.animal_ids.push(req.params.id);
     var pushStatus = await Status.findOne({_id: updatedAnimal.status_id});
     pushStatus.animal_ids.push(req.params.id);
-    await pullType.save({validateBeforeSave: false});
+    if (pullType != null) {
+      await pullType.save({validateBeforeSave: false});
+      await pullStatus.save({validateBeforeSave: false});
+    }
     await pushType.save({validateBeforeSave: false});
-    await pullStatus.save({validateBeforeSave: false});
     await pushStatus.save({validateBeforeSave: false});
     res.redirect(301, req.originalUrl);
   } catch (error) {

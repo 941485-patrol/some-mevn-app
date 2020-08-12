@@ -37,10 +37,20 @@ describe('Update Animal', function(){
             .expect(200)
         var newType = await Type.findOne({name:'name'});
         await loggedInRequest
+            .post('/api/type')
+            .send({name:'name2', environment:'environment2'})
+            .expect(200)
+        var newType2 = await Type.findOne({name:'name2'});
+        await loggedInRequest
             .post('/api/status')
             .send({name:'name', description:'mydescription'})
             .expect(200)
         var newStatus = await Status.findOne({name:'name'});
+        await loggedInRequest
+            .post('/api/status')
+            .send({name:'name2', description:'mydescription2'})
+            .expect(200)
+        var newStatus2 = await Status.findOne({name:'name2'});
         await loggedInRequest
             .post('/api/animal')
             .send({name:'myname', description:'mydescription', type_id: newType._id, status_id: newStatus._id})
@@ -48,10 +58,70 @@ describe('Update Animal', function(){
         var newAnimal = await Animal.findOne({name: 'myname'});
         await loggedInRequest
             .put(`/api/animal/${newAnimal._id}`)
-            .send({name:'mynewname', description:'mynewdescription', type_id:newAnimal.type_id, status_id:newAnimal.status_id})
+            .send({name:'myname', description:'mydescription', type_id:newType._id, status_id:newStatus._id})
+            .expect(301)
+        await loggedInRequest
+            .put(`/api/animal/${newAnimal._id}`)
+            .send({name:'mynewname', description:'mynewdescription', type_id:newType._id, status_id:newStatus._id})
+            .expect(301)
+        await loggedInRequest
+            .put(`/api/animal/${newAnimal._id}`)
+            .send({name:'mynewnameAgain', description:'mynewdescriptionAgain', type_id:newType2._id, status_id:newStatus2._id})
             .expect(301)
     });
-
+    it('Update an animal with null type_id and status_id', async function(){
+        await loggedInRequest
+            .post('/api/type')
+            .send({name:'name', environment:'environment'})
+            .expect(200)
+        var willDeleteType = await Type.findOne({name:'name'});
+        await loggedInRequest
+            .post('/api/type')
+            .send({name:'name2', environment:'environment2'})
+            .expect(200)
+        var newType = await Type.findOne({name:'name2'});
+        await loggedInRequest
+            .post('/api/status')
+            .send({name:'name', description:'mydescription'})
+            .expect(200)
+        var willDeleteStatus = await Status.findOne({name:'name'});
+        await loggedInRequest
+            .post('/api/status')
+            .send({name:'name2', description:'mydescription2'})
+            .expect(200)
+        var newStatus = await Status.findOne({name:'name2'});
+        await loggedInRequest
+            .post('/api/animal')
+            .send({name:'myname', description:'mydescription', type_id: willDeleteType._id, status_id: willDeleteStatus._id})
+            .expect(200)
+        var newAnimal = await Animal.findOne({name: 'myname'});
+        await loggedInRequest
+            .delete(`/api/type/${willDeleteType._id}`)
+            .expect({'message': 'Type deleted.'})
+        await loggedInRequest
+            .delete(`/api/status/${willDeleteStatus._id}`)
+            .expect({'message': 'Status deleted.'})
+        await loggedInRequest
+            .get(`/api/animal/${newAnimal._id}`)
+            .expect(200)
+            .expect((res, err)=>{
+                if (err) throw err;
+                if (res.body.type != null) throw new Error('Type must be null');
+                if (res.body.status != null) throw new Error('Status must be null');
+            })
+        await loggedInRequest
+            .put(`/api/animal/${newAnimal._id}`)
+            .send({name:'myname', description:'mydescription', type_id: newType._id, status_id: newStatus._id})
+            .expect(301)
+        await loggedInRequest
+            .get(`/api/animal/${newAnimal._id}`)
+            .expect(200)
+            .expect((res, err)=>{
+                if (err) throw err;
+                if (res.body.type.type_id != newType._id) throw Error('Type id not updated.');
+                if (res.body.status.status_id != newStatus._id) throw Error('Status id not updated.');
+            })
+    });
     it('Error on post url or whitespace url', async function(){
         await loggedInRequest
         .put('/api/animal/    ')

@@ -44,31 +44,6 @@ describe('Get Type', function(){
             if (res.body._id != newType._id) throw new Error('Test case failed');
         })
     });
-    it('Get all types', async function(){
-        await loggedInRequest
-        .post('/api/type')
-        .send({name:'name', environment:'environment'})
-        .expect(200)
-        .expect({"message": "Type created"})
-        await loggedInRequest
-        .post('/api/type')
-        .send({name:'anotherName', environment:'anotherEnvironment'})
-        .expect(200)
-        .expect({"message": "Type created"})
-        await loggedInRequest
-        .get(`/api/type`)
-        .expect(200)
-        .expect((res, err)=>{
-            if (err) throw err;
-            if (res.body.length != 2) throw new Error('Test case failed');
-        })
-    });
-    it('No data message if there is no type inserted', async function(){
-        await loggedInRequest
-        .get(`/api/type`)
-        .expect(200)
-        .expect({'message': 'No data.'})
-    })
     it('Error on invalid url', async function(){
         await loggedInRequest
         .get(`/api/type/invalid_url`)

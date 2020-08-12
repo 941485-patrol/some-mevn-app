@@ -44,31 +44,6 @@ describe('Get Status', function(){
             if (res.body._id != newStatus._id) throw new Error('Test case failed');
         })
     });
-    it('Get all statuses', async function(){
-        await loggedInRequest
-        .post('/api/status')
-        .send({name:'name', description:'description'})
-        .expect(200)
-        .expect({'message': 'Status created.'})
-        await loggedInRequest
-        .post('/api/status')
-        .send({name:'name1', description:'description1'})
-        .expect(200)
-        .expect({'message': 'Status created.'})
-        await loggedInRequest
-        .get(`/api/status`)
-        .expect(200)
-        .expect((res, err)=>{
-            if (err) throw err;
-            if (res.body.length != 2) throw new Error('Test case failed');
-        })
-    });
-    it('No data message if there is no status inserted', async function(){
-        await loggedInRequest
-        .get(`/api/status`)
-        .expect(200)
-        .expect({'message': 'No data.'})
-    })
     it('Error on invalid url', async function(){
         await loggedInRequest
         .get(`/api/status/invalid_url`)

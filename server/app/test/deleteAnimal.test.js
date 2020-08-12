@@ -51,13 +51,17 @@ describe('Delete Animal', function(){
             .expect(200)
             .expect({'message': 'Animal deleted.'})
         await loggedInRequest
+            .post('/api/animal')
+            .send({name:'myname2', description:'mydescription2', type_id: newType._id, status_id: newStatus._id})
+            .expect(200)
+        await loggedInRequest
         .get(`/api/type/${newType._id}`)
         .expect((res, err)=>{
             if (err) throw err;
-            var animal_ids = res.body.animals;
-            if (animal_ids.length > 0) {
-                animal_ids.forEach(animal => {
-                    if (animal._id === newAnimal._id) throw new Error('Test case failed.');
+            var animals = res.body.animals;
+            if (animals.length > 0) {
+                animals.forEach(animal => {
+                    if (animal.animal_id == newAnimal._id) throw new Error('Animal id must be pulled.');
                 });
             }
         })
@@ -65,10 +69,10 @@ describe('Delete Animal', function(){
         .get(`/api/status/${newStatus._id}`)
         .expect((res, err)=>{
             if (err) throw err;
-            var animal_ids = res.body.animals;
-            if (animal_ids.length > 0) {
-                animal_ids.forEach(animal => {
-                    if (animal._id === newAnimal._id) throw new Error('Test case failed.');
+            var animals = res.body.animals;
+            if (animals.length > 0) {
+                animals.forEach(animal => {
+                    if (animal.animal_id === newAnimal._id) throw new Error('Animal id must be pulled 2.');
                 });
             }
         })

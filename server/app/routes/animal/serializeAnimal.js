@@ -11,8 +11,8 @@ const serializeAnimal = (animal)=>{
     }
   }
   if (animal.status_id != null) {
-    typeObj = {
-      'type_id': animal.status_id._id,
+    statusObj = {
+      'status_id': animal.status_id._id,
       'name': animal.status_id.name,
       'description': animal.status_id.description,
       'created_at': animal.status_id.created_at,
