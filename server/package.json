@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "nf --procfile Procfile start testing",
-    "dev": "nf --procfile Procfile start api"
+    "dev": "nf --procfile Procfile start api",
+    "seed": "nf --procfile Procfile start seed",
+    "unseed": "nf --procfile Procfile start unseed"
   },
   "keywords": [],
   "author": "",

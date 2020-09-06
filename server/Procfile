@@ -1,2 +1,4 @@
 api: nodemon --require dotenv/config app/server.js
 testing: mocha app/test
+seed: nodemon --require dotenv/config app/seeder.js
+unseed: nodemon --require dotenv/config app/unseeder.js
