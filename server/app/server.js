@@ -20,10 +20,10 @@ var corsOptions = {
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
-  console.log(`Database ${process.env.DB_NAME} connected.`);
+  console.log(`Database ${process.env.DEV_DB_NAME} connected.`);
 });
 
-app.listen(process.env.PORT,()=>{ console.log(`Listening to port ${process.env.PORT}`)});
+app.listen(process.env.DEV_PORT,()=>{ console.log(`Listening to port ${process.env.DEV_PORT}`)});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(`${process.env.SECRET_KEY}`));

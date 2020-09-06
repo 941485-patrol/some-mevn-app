@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
 
-mongoose.connect(`mongodb://localhost/${process.env.TEST_DB_NAME}`, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false});
+mongoose.connect(`${process.env.MONGODB_URI_TEST}`, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false});
 
 module.exports = mongoose;

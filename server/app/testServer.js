@@ -23,7 +23,7 @@ db.once('open', function() {
   console.log(`Test Database ${process.env.TEST_DB_NAME} connected.`);
 });
 
-app.listen(process.env.PORT,()=>{ console.log(`Listening to test port ${process.env.TEST_PORT}`)});
+app.listen(process.env.TEST_PORT,()=>{ console.log(`Listening to test port ${process.env.TEST_PORT}`)});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(`${process.env.SECRET_KEY}`));
