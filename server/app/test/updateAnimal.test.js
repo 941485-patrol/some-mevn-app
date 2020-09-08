@@ -1,294 +1,305 @@
 var app = require('../testServer');
 const request = require('supertest');
+const agent = request.agent(app);
 const Type = require('../models/type');
 const Animal = require('../models/animal');
 const Status = require('../models/status');
-const User = require('../models/user');
-const session = require('supertest-session');
-var testRequest = null;
-const mongoose = require('mongoose');
 
 describe('Update Animal', function(){
-    var loggedInRequest;
-    beforeEach(async function(){
-        await Type.deleteMany();
-        await Animal.deleteMany();
-        await Status.deleteMany();
-        await User.deleteMany();
-        testRequest = session(app);
-        await testRequest
-        .post('/api/user/register')
-        .send({username:'username',password:'Password123',confirm:'Password123'})
-        .expect(200)
-        await testRequest
+    it('Login first', function(done){
+        agent
         .post('/api/user/login')
         .send({username:'username', password:'Password123'})
         .expect(200)
-        .expect({"message": "You are now logged in."})
-        .expect((res,err)=>{
-            if (err) {throw err};
-            loggedInRequest = testRequest; 
+        .expect({"message": "You are now logged in."}, done);
+    });
+
+    it('Update an animal', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        var newType = await Type.findOne({name:'type11'});
+        var newStat = await Status.findOne({name:'status10'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:'animal111', description:'description111', type_id:newType._id, status_id:newStat._id})
+        .expect(301);
+    });
+
+    it('Update an animal again with same credentials', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal111'});
+        var newType = await Type.findOne({name:'type11'});
+        var newStat = await Status.findOne({name:'status10'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:'animal111', description:'description111', type_id:newType._id, status_id:newStat._id})
+        .expect(301);
+    });
+
+    it('Check updated status animal id', async function(){
+        var status = await Status.findOne({name:'status10'});
+        var animal = await Animal.findOne({name:'animal111'});
+        await agent
+        .get(`/api/status/${status._id}`)
+        .expect(200)
+        .expect(function(res){
+            var animals = res.body.animals;
+            if (animals[0].animal_id!=animal._id) throw new Error('Animal id must be in status.');
         })
     });
-    it('Update an animal', async function(){
-        await loggedInRequest
-            .post('/api/type')
-            .send({name:'name', environment:'environment'})
-            .expect(200)
-        var newType = await Type.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/type')
-            .send({name:'name2', environment:'environment2'})
-            .expect(200)
-        var newType2 = await Type.findOne({name:'name2'});
-        await loggedInRequest
-            .post('/api/status')
-            .send({name:'name', description:'mydescription'})
-            .expect(200)
-        var newStatus = await Status.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/status')
-            .send({name:'name2', description:'mydescription2'})
-            .expect(200)
-        var newStatus2 = await Status.findOne({name:'name2'});
-        await loggedInRequest
-            .post('/api/animal')
-            .send({name:'myname', description:'mydescription', type_id: newType._id, status_id: newStatus._id})
-            .expect(200)
-        var newAnimal = await Animal.findOne({name: 'myname'});
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:'myname', description:'mydescription', type_id:newType._id, status_id:newStatus._id})
-            .expect(301)
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:'mynewname', description:'mynewdescription', type_id:newType._id, status_id:newStatus._id})
-            .expect(301)
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:'mynewnameAgain', description:'mynewdescriptionAgain', type_id:newType2._id, status_id:newStatus2._id})
-            .expect(301)
-    });
-    it('Update an animal with null type_id and status_id', async function(){
-        await loggedInRequest
-            .post('/api/type')
-            .send({name:'name', environment:'environment'})
-            .expect(200)
-        var willDeleteType = await Type.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/type')
-            .send({name:'name2', environment:'environment2'})
-            .expect(200)
-        var newType = await Type.findOne({name:'name2'});
-        await loggedInRequest
-            .post('/api/status')
-            .send({name:'name', description:'mydescription'})
-            .expect(200)
-        var willDeleteStatus = await Status.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/status')
-            .send({name:'name2', description:'mydescription2'})
-            .expect(200)
-        var newStatus = await Status.findOne({name:'name2'});
-        await loggedInRequest
-            .post('/api/animal')
-            .send({name:'myname', description:'mydescription', type_id: willDeleteType._id, status_id: willDeleteStatus._id})
-            .expect(200)
-        var newAnimal = await Animal.findOne({name: 'myname'});
-        await loggedInRequest
-            .delete(`/api/type/${willDeleteType._id}`)
-            .expect({'message': 'Type deleted.'})
-        await loggedInRequest
-            .delete(`/api/status/${willDeleteStatus._id}`)
-            .expect({'message': 'Status deleted.'})
-        await loggedInRequest
-            .get(`/api/animal/${newAnimal._id}`)
-            .expect(200)
-            .expect((res, err)=>{
-                if (err) throw err;
-                if (res.body.type != null) throw new Error('Type must be null');
-                if (res.body.status != null) throw new Error('Status must be null');
-            })
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:'myname', description:'mydescription', type_id: newType._id, status_id: newStatus._id})
-            .expect(301)
-        await loggedInRequest
-            .get(`/api/animal/${newAnimal._id}`)
-            .expect(200)
-            .expect((res, err)=>{
-                if (err) throw err;
-                if (res.body.type.type_id != newType._id) throw Error('Type id not updated.');
-                if (res.body.status.status_id != newStatus._id) throw Error('Status id not updated.');
-            })
-    });
-    it('Error on post url or whitespace url', async function(){
-        await loggedInRequest
-        .put('/api/animal/    ')
-        .expect(404)
+
+    it('Check updated type animal id', async function(){
+        var type = await Type.findOne({name:'type11'});
+        var animal = await Animal.findOne({name:'animal111'});
+        await agent
+        .get(`/api/type/${type._id}`)
+        .expect(200)
+        .expect(function(res){
+            var animals = res.body.animals;
+            if (animals[0].animal_id!=animal._id) throw new Error('Animal id must be in type.');
+        })
     });
 
-    it('Cannot find animal id on animal update', async function(){
-        await loggedInRequest
+    it('Delete status to prepare for null test', async function(){
+        var status = await Status.findOne({name:'status10'});
+        await agent
+        .delete(`/api/status/${status._id}`)
+        .expect(200)
+        .expect({'message': 'Status deleted.'});
+    });
+
+    it('Delete type to prepare for null test', async function(){
+        var type = await Type.findOne({name:'type11'});
+        await agent
+        .delete(`/api/type/${type._id}`)
+        .expect(200)
+        .expect({'message': 'Type deleted.'});
+    });
+
+    it('Check updated animal if type/status id is deleted.', async function(){
+        var animal = await Animal.findOne({name:'animal111'});
+        await agent
+        .get(`/api/animal/${animal._id}`)
+        .expect(200)
+        .expect(function(res){
+            if (res.body.status!=null) throw new Error('Status id must be deleted.');
+            if (res.body.type!=null) throw new Error('Type id must be deleted.');
+        })
+    });
+
+    it('Update an animal which has null status/type ids', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal111'});
+        var origType = await Type.findOne({name:'type4'});
+        var origStat = await Status.findOne({name:'status3'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:'animal11', description:'description11', type_id:origType._id, status_id:origStat._id})
+        .expect(301);
+    });
+
+    it('Refresh database (Bring back deleted status)', function(done){
+        agent
+        .post('/api/status')
+        .send({name:'status10', description:'description10'})
+        .expect(200)
+        .expect({"message": "Status created."}, done);
+    });
+
+    it('Refresh database (Bring back deleted type)', function(done){
+        agent
+        .post('/api/type')
+        .send({name:'type11', environment:'environment11'})
+        .expect(200)
+        .expect({"message": "Type created"}, done);
+    });
+
+    it('Error on whitespace url', function(done){
+        agent
+        .put('/api/animal/    ')
+        .expect(404, done);
+    });
+
+    it('Error on empty string url', function(done){
+        agent
+        .put('/api/animal/')
+        .expect(404, done);
+    });
+
+    it('Cannot find animal id on animal update', function(done){
+        agent
         .put(`/api/animal/0123456789ab`)
         .expect(400)
-        .expect(['Cannot find animal'])
+        .expect(['Cannot find animal'], done);
     });
 
-    it('Invalid url on animal update', async function(){
-        await loggedInRequest
+    it('Invalid url on animal update', function(done){
+        agent
         .put(`/api/animal/invalid_url`)
         .expect(400)
-        .expect(['Invalid Url.'])
+        .expect(['Invalid Url.'], done);
     });
 
     it('Existing records on update validation', async function(){
-        await loggedInRequest
-        .post('/api/type')
-        .send({name:'name', environment:'environment'})
-        .expect(200)
-        var newType = await Type.findOne({name:'name'});
-        await loggedInRequest
-        .post('/api/status')
-        .send({name:'name', description:'mydescription'})
-        .expect(200)
-        var newStatus = await Status.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/animal')
-            .send({name:'myname', description:'mydescription', type_id: newType._id, status_id: newStatus._id})
-            .expect(200)
-        var newAnimal = await Animal.findOne({name: 'myname'});
-        await loggedInRequest
-            .post('/api/animal')
-            .send({name:'myothername', description:'myotherdescription', type_id: newType._id, status_id: newStatus._id})
-            .expect(200)
-        var newAnimal1 = await Animal.findOne({name: 'myothername'});
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:newAnimal1.name, description:newAnimal1.description, type_id:newAnimal1.type_id, status_id: newAnimal1.status_id})
-            .expect(400)
-            .expect((res, err)=>{
-                if (err) throw err;
-                if (res.body.includes('Animal name already exists.')==false) throw new Error('Test case failed.');
-                if (res.body.includes('Animal description already exists.')==false) throw new Error('Test case failed.');
-            })
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:'animal12', description:'description9', type_id:animalToUpd.type_id, status_id: animalToUpd.status_id})
+        .expect(400)
+        .expect(function(res){
+            if (res.body.includes('Animal name already exists.')==false) throw new Error('Test case failed.');
+            if (res.body.includes('Animal description already exists.')==false) throw new Error('Test case failed.');
+        })
     });
 
-    it('Empty and uncomplete fields on update validation', async function(){
-        await loggedInRequest
-            .post('/api/type')
-            .send({name:'name', environment:'environment'})
-            .expect(200)
-        var newType = await Type.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/status')
-            .send({name:'name', description:'mydescription'})
-            .expect(200)
-        var newStatus = await Status.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/animal')
-            .send({name:'myname', description:'mydescription', type_id: newType._id, status_id: newStatus._id})
-            .expect(200)
-        var newAnimal = await Animal.findOne({name: 'myname'});
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:'', 
-                description:'', 
-                type_id:newAnimal.type_id, status_id: newAnimal.status_id})
-            .expect(400)
-            .expect((res, err)=>{
-                if (err) throw err;
-                if (res.body.includes('Animal name is required.')===false) throw new Error('Test case has failed.');
-                if (res.body.includes('Animal description is required.')===false) throw new Error('Test case has failed.');
-            })
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:'n', 
-                description:'des', 
-                type_id:newAnimal.type_id, status_id: newAnimal.status_id})
-            .expect(400)
-            .expect((res, err)=>{
-                if (err) throw err;
-                if (res.body.includes('No animal has one letter...')===false) throw new Error('Test case has failed.');
-                if (res.body.includes('Description is too short...')===false) throw new Error('Test case has failed.');
-            })
-    })
-    
-    it('Type id validation', async function(){
-        await loggedInRequest
-            .post('/api/type')
-            .send({name:'name', environment:'environment'})
-            .expect(200)
-        var newType = await Type.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/status')
-            .send({name:'name', description:'mydescription'})
-            .expect(200)
-        var newStatus = await Status.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/animal')
-            .send({name:'myname', description:'mydescription', type_id: newType._id, status_id: newStatus._id})
-            .expect(200)
-        var newAnimal = await Animal.findOne({type_id: newType._id});
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:newAnimal.name, 
-                description:newAnimal.description, 
-                type_id:'', status_id:'0123456789ab'})
-            .expect(400)
-            .expect(['Invalid Type ID.'])
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:newAnimal.name, 
-                description:newAnimal.description, 
-                type_id:'0123456789ab', status_id:''})
-            .expect(400)
-            .expect(['Invalid Status ID.'])
-            await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:newAnimal.name, 
-                description:newAnimal.description, 
-                type_id:'12345', status_id:'0123456789ab'})
-            .expect(400)
-            .expect(['Invalid Type ID.'])
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:newAnimal.name, 
-                description:newAnimal.description, 
-                type_id:'0123456789ab', status_id:'12345'})
-            .expect(400)
-            .expect(['Invalid Status ID.'])
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:newAnimal.name, 
-                description:newAnimal.description, 
-                type_id:'0123456789ab', status_id:'0123456789ab'})
-            .expect(400)
-            .expect((res, err)=>{
-                if (err) throw err;
-                if (res.body.includes('Type ID does not exist.')===false) throw new Error('Test case has failed.');
-                if (res.body.includes('Status ID does not exist.')===false) throw new Error('Test case has failed.');
-            });
-        await loggedInRequest
-            .put(`/api/animal/${newAnimal._id}`)
-            .send({name:newAnimal.name, 
-                description:newAnimal.description, 
-                type_id:null, status_id:null})
-            .expect(400)
-            .expect((res, err)=>{
-                if (err) throw err;
-                if (res.body.includes('Type ID does not exist.')===false) throw new Error('Test case has failed.');
-                if (res.body.includes('Status ID does not exist.')===false) throw new Error('Test case has failed.');
-            });
+    it('Error on empty fields', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:'', 
+            description:'', 
+            type_id:animalToUpd.type_id, status_id: animalToUpd.status_id})
+        .expect(400)
+        .expect(function(res){
+            if (res.body.includes('Animal name is required.')===false) throw new Error('Test case has failed.');
+            if (res.body.includes('Animal description is required.')===false) throw new Error('Test case has failed.');
+        })
     });
-    afterEach(async function(){
-        await loggedInRequest
-            .get('/api/user/logout')
-            .expect(200)
-            .expect({"message":"You are now logged out."})
-        await Type.deleteMany();
-        await Animal.deleteMany();
-        await Status.deleteMany();
-        await User.deleteMany();
+    it('Error on incomplete fields', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:'n', 
+            description:'des', 
+            type_id:animalToUpd.type_id, status_id: animalToUpd.status_id})
+        .expect(400)
+        .expect(function(res){
+            if (res.body.includes('No animal has one letter...')===false) throw new Error('Test case has failed.');
+            if (res.body.includes('Description is too short...')===false) throw new Error('Test case has failed.');
+        })
+    });
+    
+    it('Error on empty string type id', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:'', status_id:'0123456789ab'})
+        .expect(400)
+        .expect(['Invalid Type ID.']);
+    });
+
+    it('Error on invalid type id', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:'12345', status_id:'0123456789ab'})
+        .expect(400)
+        .expect(['Invalid Type ID.']);
+    });
+
+    it('Error on null type id', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:null, status_id:'0123456789ab'})
+        .expect(400)
+        .expect(function(res){    
+            if (res.body.includes('Type ID does not exist.')===false) throw new Error('Test case has failed.');
+            if (res.body.includes('Status ID does not exist.')===false) throw new Error('Test case has failed.');
+        });
+    });
+
+    it('Error on empty string status id', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:'0123456789ab', status_id:''})
+        .expect(400)
+        .expect(['Invalid Status ID.']);
+    });
+
+    it('Error on invalid status id', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:'0123456789ab', status_id:'12345'})
+        .expect(400)
+        .expect(['Invalid Status ID.']);
+    });
+
+    it('Error on null status id', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:'0123456789ab', status_id:null})
+        .expect(400)
+        .expect(function(res){    
+            if (res.body.includes('Type ID does not exist.')===false) throw new Error('Test case has failed.');
+            if (res.body.includes('Status ID does not exist.')===false) throw new Error('Test case has failed.');
+        });
+    });
+
+    it('Error if both status/type ids do not exist', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:'0123456789ab', status_id:'0123456789ab'})
+        .expect(400)
+        .expect(function(res){    
+            if (res.body.includes('Type ID does not exist.')===false) throw new Error('Test case has failed.');
+            if (res.body.includes('Status ID does not exist.')===false) throw new Error('Test case has failed.');
+        });
+    });
+
+    it('Error if both status/type ids are null', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:null, status_id:null})
+        .expect(400)
+        .expect(function(res){    
+            if (res.body.includes('Type ID does not exist.')===false) throw new Error('Test case has failed.');
+            if (res.body.includes('Status ID does not exist.')===false) throw new Error('Test case has failed.');
+        });
+    });
+
+    it('Error if both status/type ids are empty strings', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:animalToUpd.name, 
+            description:animalToUpd.description, 
+            type_id:'', status_id:''})
+        .expect(400)
+        .expect(['Invalid Type ID.']); // only invalid type id validation will be raised
+    });
+
+    it('Logout then', function(done){
+        agent
+        .get('/api/user/logout')
+        .expect({"message":"You are now logged out."}, done);
+    });
+
+    it('Error on updating animal if unauthenticated', async function(){
+        var animalToUpd = await Animal.findOne({name:'animal11'});
+        var newType = await Type.findOne({name:'type11'});
+        var newStat = await Status.findOne({name:'status10'});
+        await agent
+        .put(`/api/animal/${animalToUpd._id}`)
+        .send({name:'animal111', description:'description111', type_id:newType._id, status_id:newStat._id})
+        .expect(401);
     });
 })

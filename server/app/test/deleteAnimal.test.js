@@ -1,104 +1,89 @@
 var app = require('../testServer');
 const request = require('supertest');
+const agent = request.agent(app);
 const Type = require('../models/type');
 const Animal = require('../models/animal');
 const Status = require('../models/status');
-const mongoose = require('mongoose');
-const User = require('../models/user');
-const session = require('supertest-session');
-var testRequest = null;
 
 describe('Delete Animal', function(){
-    var loggedInRequest;
-    beforeEach(async function(){
-        await Type.deleteMany();
-        await Animal.deleteMany();
-        await Status.deleteMany();
-        await User.deleteMany();
-        testRequest = session(app);
-        await testRequest
-        .post('/api/user/register')
-        .send({username:'username',password:'Password123',confirm:'Password123'})
-        .expect(200)
-        await testRequest
+    it('Login first', function(done){
+        agent
         .post('/api/user/login')
         .send({username:'username', password:'Password123'})
         .expect(200)
-        .expect({"message": "You are now logged in."})
-        .expect((res,err)=>{
-            if (err) {throw err};
-            loggedInRequest = testRequest; 
-        })
+        .expect({"message": "You are now logged in."}, done);
     });
+
+    it('Create an animal for deletion', async function(){
+        var type = await Type.findOne({name:'type5'});
+        var status = await Status.findOne({name:'status6'});
+        await agent
+        .post('/api/animal')
+        .send({name:'myname', description: 'mydescription', type_id: type._id, status_id: status._id})
+        .expect(200)
+        .expect({"message": "Animal created"});
+    });
+
     it('Delete an animal', async function(){
-        await loggedInRequest
-            .post('/api/type')
-            .send({name:'name', environment:'environment'})
-            .expect(200)
-        var newType = await Type.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/status')
-            .send({name:'name', description:'mydescription'})
-            .expect(200)
-        var newStatus = await Status.findOne({name:'name'});
-        await loggedInRequest
-            .post('/api/animal')
-            .send({name:'myname', description:'mydescription', type_id: newType._id, status_id: newStatus._id})
-            .expect(200)
         var newAnimal = await Animal.findOne({name: 'myname'});
-        await loggedInRequest
-            .delete(`/api/animal/${newAnimal._id}`)
-            .expect(200)
-            .expect({'message': 'Animal deleted.'})
-        await loggedInRequest
-            .post('/api/animal')
-            .send({name:'myname2', description:'mydescription2', type_id: newType._id, status_id: newStatus._id})
-            .expect(200)
-        await loggedInRequest
-        .get(`/api/type/${newType._id}`)
-        .expect((res, err)=>{
-            if (err) throw err;
-            var animals = res.body.animals;
-            if (animals.length > 0) {
-                animals.forEach(animal => {
-                    if (animal.animal_id == newAnimal._id) throw new Error('Animal id must be pulled.');
-                });
-            }
-        })
-        await loggedInRequest
-        .get(`/api/status/${newStatus._id}`)
-        .expect((res, err)=>{
-            if (err) throw err;
-            var animals = res.body.animals;
-            if (animals.length > 0) {
-                animals.forEach(animal => {
-                    if (animal.animal_id === newAnimal._id) throw new Error('Animal id must be pulled 2.');
-                });
-            }
-        })
+        await agent
+        .delete(`/api/animal/${newAnimal._id}`)
+        .expect(200)
+        .expect({'message': 'Animal deleted.'});
     });
 
-    it('Error if wrong type id in url', async function(){
-        await loggedInRequest
-            .delete(`/api/animal/0123456789ab`)
-            .expect(400)
-            .expect(['Error deleting data.'])
+    it('Deleted animal is not present on type listing', async function(){
+        var type = await Type.findOne({name:'type5'});
+        await agent
+            .get(`/api/type/${type._id}`)
+            .expect(200)
+            .expect(function(res){
+                var animals = res.body.animals;
+                if (animals.length != 0) throw new Error('Animal id must be pulled.');
+            });
     });
 
-    it('Error if empty or whitespace type id', async function(){
-        await loggedInRequest
-            .delete(`/api/animal/`)
-            .expect(404)
-        await loggedInRequest
-            .delete(`/api/animal/    `)
-            .expect(404)
+    it('Deleted animal is not present on status listing', async function(){
+        var status = await Status.findOne({name:'status6'});
+        await agent
+            .get(`/api/status/${status._id}`)
+            .expect(200)
+            .expect(function(res){
+                var animals = res.body.animals;
+                if (animals.length != 0) throw new Error('Animal id must be pulled.');
+            });
+    });
+
+    it('Error if wrong type id in url', function(done){
+        agent
+        .delete(`/api/animal/0123456789ab`)
+        .expect(400)
+        .expect(['Error deleting data.'], done);
+    });
+
+    it('Error if empty string type id on url', function(done){
+        agent
+        .delete(`/api/animal/`)
+        .expect(404, done);
+    });
+
+    it('Error if whitespace type id on url', function(done){
+        agent
+        .delete(`/api/animal/    `)
+        .expect(404, done);
+    });
+
+    it('Logout then', function(done){
+        agent
+        .get('/api/user/logout')
+        .expect({"message":"You are now logged out."}, done);
+    });
+
+    it('Error on deleting an animal if authenticated', async function(){
+        var newAnimal = await Animal.findOne({name: 'animal1'});
+        await agent
+        .delete(`/api/animal/${newAnimal._id}`)
+        .expect(401);
     });
     
-    afterEach(async function(){
-        await loggedInRequest
-            .get('/api/user/logout')
-            .expect(200)
-            .expect({"message":"You are now logged out."})
-        await User.deleteMany();
-    });
 });

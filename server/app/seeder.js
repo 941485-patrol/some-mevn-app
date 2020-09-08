@@ -7,8 +7,8 @@ var mongoose = require('./testDatabase');
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
-    seedTables();
     console.log(`Test Database ${process.env.TEST_DB_NAME} connected.`);
+    seedTables();
 });
 
 const seedTables = async ()=> {
