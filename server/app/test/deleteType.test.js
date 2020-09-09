@@ -1,8 +1,9 @@
 var app = require('../testServer');
 const request = require('supertest');
 const agent = request.agent(app);
-const Status = require('../models/status');
-describe('Delete Status', function(){
+const Type = require('../models/type');
+
+describe('Delete Type', function(){
     it('Login first', function(done){
         agent
         .post('/api/user/login')
@@ -10,40 +11,40 @@ describe('Delete Status', function(){
         .expect(200)
         .expect({"message": "You are now logged in."}, done);
     });
-    
-    it('Create a Status for deletion', function(done){
+
+    it('Create a Type for deletion', function(done){
         agent
-        .post('/api/status')
-        .send({name:'status13', description:'description13'})
+        .post('/api/type')
+        .send({name:'type13', environment:'environment13'})
         .expect(200)
-        .expect({'message': 'Status created.'}, done);
+        .expect({'message': 'Type created'}, done);
     });
 
-    it('Delete a Status', async function(){
-        var status = await Status.findOne({name:'status13'});
+    it('Delete a Type', async function(){
+        var type = await Type.findOne({name:'type13'});
         await agent
-        .delete(`/api/status/${status._id}`)
+        .delete(`/api/type/${type._id}`)
         .expect(200)
-        .expect({'message': 'Status deleted.'});
+        .expect({'message': 'Type deleted.'})
     });
 
     it('Error on invalid type id url', function(done){
         agent
-        .delete(`/api/status/invalid_url`)
+        .delete(`/api/type/invalid_url`)
         .expect(400)
         .expect(['Invalid Url.'], done);
     });
 
     it('Error if type id not found', function(done){
         agent
-        .delete(`/api/status/0123456789ab`)
+        .delete(`/api/type/0123456789ab`)
         .expect(400)
         .expect(['Error deleting data.'], done);
     });
 
     it('Error if empty type id', function(done){
         agent
-        .delete(`/api/status/`)
+        .delete(`/api/type/`)
         .expect(404, done);
     });
 
@@ -53,10 +54,10 @@ describe('Delete Status', function(){
         .expect({"message":"You are now logged out."}, done);
     });
 
-    it('Error deleting a status if unauthenticated', async function(){
-        var status = await Status.findOne({name:'status12'});
+    it('Error deleting a type if unauthenticated', async function(){
+        var type = await Type.findOne({name:'type4'});
         await agent
-        .delete(`/api/status/${status._id}`)
+        .delete(`/api/type/${type._id}`)
         .expect(401);
     });
 });

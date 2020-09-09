@@ -2,6 +2,7 @@ var app = require('../testServer');
 const request = require('supertest');
 const agent = request.agent(app);
 const Status = require('../models/status');
+const Animal = require('../models/animal');
 
 describe('Update Status', function(){
     it('Login first', function(done){
@@ -30,6 +31,26 @@ describe('Update Status', function(){
             if (res.body.includes('Status name already exists.')===false) throw new Error('Test case failed.');
             if (res.body.includes('Status description already exists.')===false) throw new Error('Test case failed.');
         })
+    });
+
+    it('Update status with same credentials', async function(){
+        var status = await Status.findOne({name:'status99'});
+        await agent
+        .put(`/api/status/${status._id}`)
+        .send({name:'status99', description:'description99'})
+        .expect(301);
+    });
+
+    it('Check if animal status_id is updated also', async function(){
+        var status = await Status.findOne({name:'status99'});
+        var animal = await Animal.findOne({status_id:status._id});
+        await agent
+        .get(`/api/animal/${animal._id}`)
+        .expect(200)
+        .expect(function(res){
+            var statusObj = res.body.status;
+            if (statusObj.status_id!=status._id) throw new Error('Both status id must be equal.');
+        });
     });
 
     it('Error if empty or incomplete fields on update', async function(){
