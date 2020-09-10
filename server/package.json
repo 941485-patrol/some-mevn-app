@@ -7,6 +7,8 @@
     "test": "nf --procfile Procfile start testing",
     "dev": "nf --procfile Procfile start api",
     "seed": "nf --procfile Procfile start seed",
+    "testseed": "nf --procfile Procfile start testseed",
+    "testunseed": "nf --procfile Procfile start testunseed",
     "unseed": "nf --procfile Procfile start unseed"
   },
   "keywords": [],

@@ -16,7 +16,7 @@ const login = async function(req, res, next){
             signed:true,
             sameSite:'none',
             httpOnly:true,
-            maxAge:30000, // 3 seconds
+            maxAge:180000, // 3 minutes
         }); 
         res.status(200).json({"message": "You are now logged in."});
     } catch (error) {
